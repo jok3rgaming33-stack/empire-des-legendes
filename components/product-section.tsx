@@ -119,9 +119,17 @@ export function ProductSection({ config }: { config: SectionConfig }) {
   }, [isModalOpen, isAnimating])
 
   const Icon = config.icon === "crown" || config.icon === "flask" ? Crown : Sparkles
+  // xl:pr réserve l’espace du rail index catalogue à droite
   const sectionProps = config.anchor
-    ? { id: config.anchor, className: "mx-auto max-w-[960px] px-5 pb-20 pt-12 scroll-mt-24 sm:px-8" }
-    : { className: "mx-auto max-w-[960px] px-5 py-16 sm:px-8" }
+    ? {
+        id: config.anchor,
+        className:
+          "mx-auto max-w-[960px] px-5 pb-20 pt-12 scroll-mt-24 sm:px-8 xl:mr-[9.5rem] 2xl:mr-44",
+      }
+    : {
+        className:
+          "mx-auto max-w-[960px] px-5 py-16 sm:px-8 xl:mr-[9.5rem] 2xl:mr-44",
+      }
 
   const orderedProducts = products ? sortProductsFeaturedFirst(products) : null
 
@@ -200,7 +208,9 @@ export function ProductSection({ config }: { config: SectionConfig }) {
               return (
                 <article
                   key={product.id}
-                  className={`group border-t border-primary/15 py-8 last:border-b last:border-primary/15 md:py-10 ${
+                  id={`product-${product.id}`}
+                  data-product-id={product.id}
+                  className={`group scroll-mt-28 border-t border-primary/15 py-8 last:border-b last:border-primary/15 md:py-10 ${
                     out ? "opacity-55" : ""
                   } ${featured ? "product-featured-arrivage px-3 sm:px-5" : ""}`}
                 >
