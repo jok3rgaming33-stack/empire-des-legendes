@@ -11,10 +11,13 @@ export function ShopSections() {
 
   if (!categories) {
     return (
-      <div className="mx-auto max-w-[1200px] px-4 py-20">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-72 animate-pulse rounded-sm border border-primary/20 bg-[#0a0a0a]" />
+      <div className="mx-auto max-w-[1280px] px-4 py-20">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-80 animate-pulse rounded-2xl border border-primary/15 bg-[#0a0a0a]"
+            />
           ))}
         </div>
       </div>
@@ -31,8 +34,9 @@ export function ShopSections() {
             icon: idx === 0 ? "crown" : "sparkles",
             eyebrow: idx === 0 ? "Collection exclusive" : "Sélection",
             title: cat.name,
-            gridCols: "md:grid-cols-2 lg:grid-cols-4",
-            imageSize: "h-32 w-32",
+            // La grille est fixée dans ProductSection (2 / 3 colonnes + cartes larges).
+            gridCols: "sm:grid-cols-2 xl:grid-cols-3",
+            imageSize: "aspect-square",
             anchor: idx === 0 ? "featured" : undefined,
           }}
         />
