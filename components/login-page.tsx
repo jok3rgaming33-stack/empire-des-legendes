@@ -597,7 +597,7 @@ export function LoginPage({ onSuccess }: { onSuccess: (opts?: { openOrders?: boo
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <img
-        src="/images/hero-empire.jpg"
+        src="/preview-empire.jpg"
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover object-center"

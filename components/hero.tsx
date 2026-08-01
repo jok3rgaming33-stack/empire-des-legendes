@@ -18,7 +18,7 @@ export function Hero() {
       <div className="relative mx-auto w-full max-w-[1600px]">
         <div className="relative aspect-[16/9] w-full min-h-[280px] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[520px]">
           <Image
-            src="/images/hero-empire.jpg"
+            src="/hero-empire.jpg"
             alt="L'Empire des Légendes — Le Plug des Truands"
             fill
             className="object-cover object-center"
