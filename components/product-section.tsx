@@ -22,10 +22,6 @@ type SectionConfig = {
   anchor?: string
 }
 
-/**
- * Retrouve le type ("image"|"video") d'une URL dans la liste media d'un produit.
- * Normalise les deux côtés (URL proxy et URL brute) pour éviter les faux négatifs.
- */
 function getMediaType(
   url: string | null | undefined,
   media: Array<{ url: string; type: "image" | "video" }> | null | undefined,
@@ -46,7 +42,6 @@ function getMediaType(
   return match?.type
 }
 
-// Prix effectif d'une variante après remise produit éventuelle.
 function effectivePrice(price: number, product: Product): number {
   if (product.discountType === "percent" && product.discountValue) {
     return Math.max(0, Math.round(price * (1 - product.discountValue / 100)))
@@ -57,7 +52,6 @@ function effectivePrice(price: number, product: Product): number {
   return price
 }
 
-/** Variantes encore commandables au vu du stock. */
 function availableVariants(product: Product): { v: ProductVariant; idx: number }[] {
   return product.variants
     .map((v, idx) => ({ v, idx }))
@@ -76,7 +70,6 @@ export function ProductSection({ config }: { config: SectionConfig }) {
   const [variantIdx, setVariantIdx] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  // Variante choisie par produit (sur la miniature) — clé = product.id
   const [cardVariant, setCardVariant] = useState<Record<number, number>>({})
   const [addingId, setAddingId] = useState<number | null>(null)
   const [alerted, setAlerted] = useState<Record<number, boolean>>({})
@@ -87,9 +80,7 @@ export function ProductSection({ config }: { config: SectionConfig }) {
     if (!token) return
     setAlerting(product.id)
     const existing = await hasRestockAlert(product.id, token)
-    if (!existing) {
-      await requestRestockAlert(product.id, token)
-    }
+    if (!existing) await requestRestockAlert(product.id, token)
     setAlerted((prev) => ({ ...prev, [product.id]: true }))
     setAlerting(null)
   }
@@ -125,15 +116,14 @@ export function ProductSection({ config }: { config: SectionConfig }) {
 
   const Icon = config.icon === "crown" || config.icon === "flask" ? Crown : Sparkles
   const sectionProps = config.anchor
-    ? { id: config.anchor, className: "mx-auto max-w-[1280px] px-4 pb-20 pt-14 scroll-mt-24" }
-    : { className: "mx-auto max-w-[1280px] px-4 py-16" }
+    ? { id: config.anchor, className: "mx-auto max-w-[1100px] px-5 pb-24 pt-16 scroll-mt-24 sm:px-8" }
+    : { className: "mx-auto max-w-[1100px] px-5 py-20 sm:px-8" }
 
   const handleAdd = async () => {
     if (!selected) return
     const v = selected.variants[variantIdx]
     if (!v) return
-    const price = effectivePrice(v.price, selected)
-    addToCart(`${selected.title} ×${v.qty}`, price)
+    addToCart(`${selected.title} ×${v.qty}`, effectivePrice(v.price, selected))
     await decrementStock(selected.id, 1)
     mutate()
     closeModal()
@@ -144,12 +134,10 @@ export function ProductSection({ config }: { config: SectionConfig }) {
     if (product.stock <= 0) return
     const avail = availableVariants(product)
     if (!avail.length) return
-    const chosen =
-      avail.find((a) => a.idx === cardVariant[product.id]) ?? avail[0]
+    const chosen = avail.find((a) => a.idx === cardVariant[product.id]) ?? avail[0]
     setAddingId(product.id)
     try {
-      const price = effectivePrice(chosen.v.price, product)
-      addToCart(`${product.title} ×${chosen.v.qty}`, price)
+      addToCart(`${product.title} ×${chosen.v.qty}`, effectivePrice(chosen.v.price, product))
       await decrementStock(product.id, 1)
       mutate()
     } finally {
@@ -160,222 +148,233 @@ export function ProductSection({ config }: { config: SectionConfig }) {
   return (
     <>
       <section {...sectionProps}>
-        <div className="mb-12 text-center">
-          <div className="mb-3 flex items-center justify-center gap-3">
-            <span className="h-px w-10 bg-primary/40" aria-hidden="true" />
-            <Icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
-            <span className="h-px w-10 bg-primary/40" aria-hidden="true" />
+        {/* En-tête catalogue luxe — aéré, filet fin */}
+        <header className="mb-16 text-center">
+          <div className="mb-5 flex items-center justify-center gap-4">
+            <span className="h-px w-12 bg-primary/30" aria-hidden="true" />
+            <Icon className="h-4 w-4 text-primary" strokeWidth={1.25} />
+            <span className="h-px w-12 bg-primary/30" aria-hidden="true" />
           </div>
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-primary/80">
+          <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.45em] text-primary/75">
             {config.eyebrow}
           </p>
-          <h2 className="section-title-gold">{config.title}</h2>
-        </div>
+          <h2 className="font-display text-2xl font-medium uppercase tracking-[0.28em] text-[#f5f0e6] sm:text-3xl">
+            {config.title}
+          </h2>
+          <div className="mx-auto mt-6 h-px w-16 bg-primary/40" aria-hidden="true" />
+        </header>
 
         {!products ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-80 animate-pulse rounded-2xl border border-primary/15 bg-[#0a0a0a]"
-              />
+          <div className="flex flex-col gap-16">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-72 animate-pulse border border-primary/10 bg-[#0a0a0a]/60" />
             ))}
           </div>
         ) : products.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">
+          <p className="py-16 text-center text-sm tracking-wide text-muted-foreground">
             Aucun produit dans cette section pour le moment.
           </p>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => {
+          <div className="flex flex-col">
+            {products.map((product, i) => {
               const badges = resolveBadges(product.badges, product.stock)
               const out = product.stock <= 0
               const avail = availableVariants(product)
-              const activeIdx =
-                cardVariant[product.id] ?? avail[0]?.idx ?? 0
-              const active =
-                avail.find((a) => a.idx === activeIdx) ?? avail[0]
+              const activeIdx = cardVariant[product.id] ?? avail[0]?.idx ?? 0
+              const active = avail.find((a) => a.idx === activeIdx) ?? avail[0]
               const mainUrl = product.image || product.media?.[0]?.url || null
               const mainType = mainUrl
                 ? (getMediaType(mainUrl, product.media) ??
                   product.media?.find((m) => m.url === mainUrl)?.type)
                 : undefined
+              // Alternance image gauche / droite (catalogue lookbook)
+              const imageRight = i % 2 === 1
 
               return (
                 <article
                   key={product.id}
-                  className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-gradient-to-b from-[#121212] to-[#080808] transition-all duration-300 ${
-                    out
-                      ? "border-white/10 opacity-55"
-                      : "border-primary/30 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_12px_40px_rgba(201,162,39,0.12)]"
+                  className={`group border-t border-primary/15 py-12 last:border-b last:border-primary/15 md:py-16 ${
+                    out ? "opacity-55" : ""
                   }`}
                 >
-                  {/* En-tête image carrée + cadre or */}
-                  <div className="relative p-3 pb-0">
-                    <div
-                      className="relative aspect-square w-full overflow-hidden rounded-xl border border-primary/25 bg-[#0d0d0d] shadow-[inset_0_0_0_1px_rgba(201,162,39,0.08)]"
-                      onClick={() => !out && openModal(product, activeIdx)}
-                      role={out ? undefined : "button"}
-                      tabIndex={out ? undefined : 0}
-                      onKeyDown={(e) => {
-                        if (!out && (e.key === "Enter" || e.key === " ")) {
-                          e.preventDefault()
-                          openModal(product, activeIdx)
-                        }
-                      }}
-                    >
-                      {mainUrl ? (
-                        <BlobMedia
-                          src={mainUrl}
-                          alt={product.title}
-                          mediaType={mainType}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-primary/25">
-                          <Package className="h-14 w-14" strokeWidth={1} />
-                        </div>
-                      )}
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-                      <ProductBadges badges={badges} />
-
-                      {/* Pastille stock */}
-                      <span
-                        className={`absolute bottom-2 left-2 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                          out
-                            ? "bg-zinc-800 text-zinc-400"
-                            : "bg-black/70 text-primary ring-1 ring-primary/40"
-                        }`}
+                  <div
+                    className={`flex flex-col gap-10 md:items-center md:gap-14 ${
+                      imageRight ? "md:flex-row-reverse" : "md:flex-row"
+                    }`}
+                  >
+                    {/* Visuel grand format — lookbook */}
+                    <div className="relative w-full md:w-[48%] md:shrink-0">
+                      <div
+                        className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden bg-[#0c0c0c] ring-1 ring-primary/20"
+                        onClick={() => !out && openModal(product, activeIdx)}
+                        role={out ? undefined : "button"}
+                        tabIndex={out ? undefined : 0}
+                        onKeyDown={(e) => {
+                          if (!out && (e.key === "Enter" || e.key === " ")) {
+                            e.preventDefault()
+                            openModal(product, activeIdx)
+                          }
+                        }}
                       >
-                        {out ? "Rupture" : `Stock ${product.stock}`}
-                      </span>
+                        {mainUrl ? (
+                          <BlobMedia
+                            src={mainUrl}
+                            alt={product.title}
+                            mediaType={mainType}
+                            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-primary/20">
+                            <Package className="h-16 w-16" strokeWidth={0.9} />
+                          </div>
+                        )}
+                        {/* Voile très léger bas */}
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent" />
+                        <ProductBadges badges={badges} />
+                      </div>
+                      {/* Légende discrète sous l’image */}
+                      <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-primary/50">
+                        {product.symbol || product.number
+                          ? [product.symbol, product.number].filter(Boolean).join(" · ")
+                          : "Édition catalogue"}
+                      </p>
                     </div>
-                  </div>
 
-                  {/* Corps : titre + options visibles */}
-                  <div className="flex flex-1 flex-col gap-3 p-4 pt-3">
-                    <div className="min-h-[3.25rem]">
-                      {product.symbol && (
-                        <p className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-primary/80">
-                          {product.symbol}
-                          {product.number ? ` · ${product.number}` : ""}
-                        </p>
-                      )}
-                      <h3 className="font-display text-[15px] font-semibold uppercase leading-snug tracking-wide text-white">
+                    {/* Fiche produit — typo luxe, options en liste */}
+                    <div className="flex w-full flex-1 flex-col justify-center md:max-w-md md:py-4">
+                      <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.35em] text-primary/70">
+                        {out ? "Indisponible" : `En stock · ${product.stock}`}
+                      </p>
+
+                      <h3 className="font-display text-2xl font-medium uppercase leading-tight tracking-[0.12em] text-[#f5f0e6] sm:text-3xl">
                         {product.title}
                       </h3>
+
                       {product.description && (
-                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                        <p className="mt-4 max-w-sm text-sm leading-relaxed text-zinc-400">
                           {product.description}
                         </p>
                       )}
-                    </div>
 
-                    {/* Options / variantes sur la miniature */}
-                    {!out && avail.length > 0 ? (
-                      <div>
-                        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                          Options
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {avail.map(({ v, idx }) => {
-                            const price = effectivePrice(v.price, product)
-                            const isOn = idx === activeIdx
-                            const discounted = price !== v.price
-                            return (
-                              <button
-                                key={`${product.id}-${idx}`}
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setCardVariant((prev) => ({
-                                    ...prev,
-                                    [product.id]: idx,
-                                  }))
-                                }}
-                                className={`rounded-lg border px-2.5 py-1.5 text-left transition-all ${
-                                  isOn
-                                    ? "border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(201,162,39,0.2)]"
-                                    : "border-white/10 bg-black/40 text-white/75 hover:border-primary/40 hover:text-white"
-                                }`}
-                              >
-                                <span className="block text-[11px] font-semibold leading-none">
-                                  ×{v.qty}
-                                </span>
-                                <span className="mt-0.5 block text-[10px] leading-none">
-                                  {price}€
-                                  {discounted && (
-                                    <span className="ml-1 text-zinc-500 line-through">
-                                      {v.price}€
+                      {/* Options — liste élégante type catalogue */}
+                      {!out && avail.length > 0 && (
+                        <div className="mt-8">
+                          <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.35em] text-zinc-500">
+                            Choisir une option
+                          </p>
+                          <ul className="divide-y divide-primary/10 border-y border-primary/15">
+                            {avail.map(({ v, idx }) => {
+                              const price = effectivePrice(v.price, product)
+                              const isOn = idx === activeIdx
+                              const discounted = price !== v.price
+                              return (
+                                <li key={`${product.id}-${idx}`}>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setCardVariant((prev) => ({
+                                        ...prev,
+                                        [product.id]: idx,
+                                      }))
+                                    }
+                                    className={`flex w-full items-center justify-between gap-4 py-3.5 text-left transition-colors ${
+                                      isOn
+                                        ? "bg-primary/[0.06] text-primary"
+                                        : "text-zinc-300 hover:bg-white/[0.02] hover:text-white"
+                                    }`}
+                                  >
+                                    <span className="flex items-center gap-3">
+                                      <span
+                                        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                                          isOn
+                                            ? "border-primary"
+                                            : "border-zinc-600"
+                                        }`}
+                                        aria-hidden="true"
+                                      >
+                                        {isOn && (
+                                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                        )}
+                                      </span>
+                                      <span className="text-sm tracking-wide">
+                                        Quantité ×{v.qty}
+                                      </span>
                                     </span>
-                                  )}
-                                </span>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ) : out ? (
-                      <p className="text-xs text-zinc-500">Aucune option disponible</p>
-                    ) : null}
-
-                    {/* Prix sélection + actions */}
-                    <div className="mt-auto flex flex-col gap-2 border-t border-white/5 pt-3">
-                      {!out && active && (
-                        <div className="flex items-baseline justify-between gap-2">
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                            Sélection
-                          </span>
-                          <span className="font-display text-lg font-semibold text-primary">
-                            {effectivePrice(active.v.price, product)}€
-                            <span className="ml-1 text-xs font-normal text-zinc-500">
-                              / ×{active.v.qty}
-                            </span>
-                          </span>
+                                    <span className="font-display text-sm tracking-wider">
+                                      {price.toFixed(2)} €
+                                      {discounted && (
+                                        <span className="ml-2 text-xs text-zinc-600 line-through">
+                                          {v.price.toFixed(2)} €
+                                        </span>
+                                      )}
+                                    </span>
+                                  </button>
+                                </li>
+                              )
+                            })}
+                          </ul>
                         </div>
                       )}
 
-                      {out ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (!alerted[product.id]) requestAlert(product)
-                          }}
-                          disabled={alerting === product.id || alerted[product.id]}
-                          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-primary transition-colors hover:bg-primary/20 disabled:opacity-70"
-                        >
-                          {alerted[product.id] ? (
-                            <>
-                              <BellRing className="h-3.5 w-3.5" aria-hidden="true" />
-                              Alerte activée
-                            </>
+                      {/* Prix sélection + CTA */}
+                      <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                        {!out && active ? (
+                          <div>
+                            <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+                              Total sélection
+                            </p>
+                            <p className="mt-1 font-display text-3xl font-medium tracking-wide text-primary">
+                              {effectivePrice(active.v.price, product).toFixed(2)}
+                              <span className="ml-1 text-lg">€</span>
+                            </p>
+                          </div>
+                        ) : (
+                          <div />
+                        )}
+
+                        <div className="flex flex-col gap-2 sm:items-end">
+                          {out ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!alerted[product.id]) requestAlert(product)
+                              }}
+                              disabled={alerting === product.id || alerted[product.id]}
+                              className="inline-flex items-center justify-center gap-2 border border-primary/40 px-6 py-3 text-[11px] font-medium uppercase tracking-[0.25em] text-primary transition-colors hover:bg-primary/10 disabled:opacity-60"
+                            >
+                              {alerted[product.id] ? (
+                                <>
+                                  <BellRing className="h-3.5 w-3.5" />
+                                  Alerte activée
+                                </>
+                              ) : (
+                                <>
+                                  <BellPlus className="h-3.5 w-3.5" />
+                                  {alerting === product.id ? "…" : "Me prévenir"}
+                                </>
+                              )}
+                            </button>
                           ) : (
                             <>
-                              <BellPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                              {alerting === product.id ? "…" : "Alerte dispo"}
+                              <button
+                                type="button"
+                                onClick={(e) => handleAddFromCard(product, e)}
+                                disabled={addingId === product.id || !avail.length}
+                                className="inline-flex min-w-[200px] items-center justify-center bg-primary px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-black transition-all hover:bg-[var(--gold-soft)] hover:shadow-[0_0_28px_rgba(201,162,39,0.35)] disabled:opacity-50"
+                              >
+                                {addingId === product.id ? "…" : "Ajouter au panier"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openModal(product, activeIdx)}
+                                className="text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-500 underline-offset-4 transition-colors hover:text-primary hover:underline"
+                              >
+                                Voir les détails
+                              </button>
                             </>
                           )}
-                        </button>
-                      ) : (
-                        <div className="grid grid-cols-[1fr_auto] gap-2">
-                          <button
-                            type="button"
-                            onClick={(e) => handleAddFromCard(product, e)}
-                            disabled={addingId === product.id || !avail.length}
-                            className="btn-gold rounded-xl py-2.5 text-[10px] disabled:opacity-60"
-                          >
-                            {addingId === product.id ? "…" : "Ajouter au panier"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openModal(product, activeIdx)}
-                            className="rounded-xl border border-white/15 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-white/70 transition-colors hover:border-primary/40 hover:text-primary"
-                          >
-                            Détails
-                          </button>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -385,13 +384,14 @@ export function ProductSection({ config }: { config: SectionConfig }) {
         )}
       </section>
 
+      {/* Modal détails — même esprit luxe */}
       {isModalOpen && selected && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/92 p-4 backdrop-blur-md"
           onClick={closeModal}
         >
           <div
-            className="relative flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-primary/30 bg-[#0a0a0a] md:flex-row"
+            className="relative flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden border border-primary/25 bg-[#0a0a0a] md:flex-row"
             onClick={(e) => e.stopPropagation()}
           >
             <div
@@ -411,14 +411,14 @@ export function ProductSection({ config }: { config: SectionConfig }) {
 
             <button
               onClick={closeModal}
-              className="absolute right-4 top-4 z-50 rounded-full bg-black/50 p-2 text-white/50 hover:text-white"
+              className="absolute right-4 top-4 z-50 border border-white/10 bg-black/60 p-2 text-white/50 hover:text-white"
               aria-label="Fermer"
             >
               <CloseIcon className="h-5 w-5" />
             </button>
 
-            <div className="relative z-20 flex w-full items-center justify-center bg-[#050505]/50 p-6 md:w-1/2 md:p-10">
-              <div className="relative aspect-square w-full max-w-[280px] overflow-hidden rounded-xl border border-primary/20">
+            <div className="relative z-20 flex w-full items-center justify-center border-b border-primary/10 bg-[#060606] p-8 md:w-1/2 md:border-b-0 md:border-r md:p-12">
+              <div className="relative aspect-[4/5] w-full max-w-[280px] overflow-hidden ring-1 ring-primary/20">
                 {selected.image && (
                   <BlobMedia
                     src={selected.image}
@@ -430,57 +430,69 @@ export function ProductSection({ config }: { config: SectionConfig }) {
               </div>
             </div>
 
-            <div className="relative z-20 flex w-full flex-col justify-center overflow-y-auto p-6 pb-safe md:w-1/2 md:p-10">
+            <div className="relative z-20 flex w-full flex-col justify-center overflow-y-auto p-8 pb-safe md:w-1/2 md:p-12">
               {selected.number && (
-                <span className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-primary">
-                  Code {selected.number}
+                <span className="mb-3 font-mono text-[10px] uppercase tracking-[0.35em] text-primary/80">
+                  Réf. {selected.number}
                 </span>
               )}
-              <h3 className="mb-3 font-display text-2xl font-bold uppercase tracking-wide text-white md:text-3xl">
+              <h3 className="font-display text-2xl font-medium uppercase tracking-[0.14em] text-[#f5f0e6] md:text-3xl">
                 {selected.title}
               </h3>
-              <p className="mb-5 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-4 text-sm leading-relaxed text-zinc-400">
                 {selected.fullDescription || selected.description}
               </p>
 
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+              <p className="mb-2 mt-8 text-[10px] font-medium uppercase tracking-[0.35em] text-zinc-500">
                 Options
               </p>
-              <div className="mb-5 flex flex-wrap gap-2">
+              <ul className="mb-6 divide-y divide-primary/10 border-y border-primary/15">
                 {selected.variants.map((v: ProductVariant, i: number) => {
                   if (v.qty > selected.stock) return null
                   const price = effectivePrice(v.price, selected)
                   const isOn = i === variantIdx
                   return (
-                    <button
-                      key={`${v.qty}-${i}`}
-                      type="button"
-                      onClick={() => setVariantIdx(i)}
-                      className={`rounded-xl border px-3 py-2 text-sm transition-all ${
-                        isOn
-                          ? "border-primary bg-primary/15 text-primary"
-                          : "border-white/10 text-white/80 hover:border-primary/40"
-                      }`}
-                    >
-                      ×{v.qty} — {price}€
-                      {price !== v.price ? (
-                        <span className="ml-1 text-xs text-zinc-500 line-through">
-                          {v.price}€
+                    <li key={`${v.qty}-${i}`}>
+                      <button
+                        type="button"
+                        onClick={() => setVariantIdx(i)}
+                        className={`flex w-full items-center justify-between py-3 text-left text-sm transition-colors ${
+                          isOn ? "text-primary" : "text-zinc-300 hover:text-white"
+                        }`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span
+                            className={`h-3.5 w-3.5 rounded-full border ${
+                              isOn ? "border-primary bg-primary/30" : "border-zinc-600"
+                            }`}
+                          />
+                          ×{v.qty}
                         </span>
-                      ) : null}
-                    </button>
+                        <span className="font-display tracking-wider">
+                          {price.toFixed(2)} €
+                          {price !== v.price && (
+                            <span className="ml-2 text-xs text-zinc-600 line-through">
+                              {v.price.toFixed(2)} €
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    </li>
                   )
                 })}
-              </div>
+              </ul>
 
-              <div className="mb-5 font-display text-2xl font-semibold text-primary">
+              <p className="mb-6 font-display text-3xl font-medium text-primary">
                 {selected.variants[variantIdx]
-                  ? effectivePrice(selected.variants[variantIdx].price, selected)
-                  : 0}
+                  ? effectivePrice(selected.variants[variantIdx].price, selected).toFixed(2)
+                  : "0.00"}{" "}
                 €
-              </div>
+              </p>
 
-              <button onClick={handleAdd} className="btn-gold w-full rounded-xl py-4">
+              <button
+                onClick={handleAdd}
+                className="w-full bg-primary py-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-black transition-all hover:bg-[var(--gold-soft)]"
+              >
                 Ajouter au panier
               </button>
             </div>
