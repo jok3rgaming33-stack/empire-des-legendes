@@ -5,7 +5,11 @@ import useSWR from "swr"
 import { useCart } from "@/components/cart-provider"
 import { Crown, Sparkles, X as CloseIcon, Package } from "lucide-react"
 import { ProductBadges } from "@/components/product-badge"
-import { resolveBadges } from "@/lib/badges"
+import {
+  resolveBadges,
+  isFeaturedArrivage,
+  sortProductsFeaturedFirst,
+} from "@/lib/badges"
 import { BlobMedia } from "@/components/blob-media"
 import { getProductsBySection, decrementStock } from "@/app/actions/products"
 import { requestRestockAlert, hasRestockAlert } from "@/app/actions/restock"
@@ -116,8 +120,10 @@ export function ProductSection({ config }: { config: SectionConfig }) {
 
   const Icon = config.icon === "crown" || config.icon === "flask" ? Crown : Sparkles
   const sectionProps = config.anchor
-    ? { id: config.anchor, className: "mx-auto max-w-[1100px] px-5 pb-24 pt-16 scroll-mt-24 sm:px-8" }
-    : { className: "mx-auto max-w-[1100px] px-5 py-20 sm:px-8" }
+    ? { id: config.anchor, className: "mx-auto max-w-[960px] px-5 pb-20 pt-12 scroll-mt-24 sm:px-8" }
+    : { className: "mx-auto max-w-[960px] px-5 py-16 sm:px-8" }
+
+  const orderedProducts = products ? sortProductsFeaturedFirst(products) : null
 
   const handleAdd = async () => {
     if (!selected) return
@@ -149,35 +155,36 @@ export function ProductSection({ config }: { config: SectionConfig }) {
     <>
       <section {...sectionProps}>
         {/* En-tête catalogue luxe — aéré, filet fin */}
-        <header className="mb-16 text-center">
-          <div className="mb-5 flex items-center justify-center gap-4">
-            <span className="h-px w-12 bg-primary/30" aria-hidden="true" />
+        <header className="mb-12 text-center">
+          <div className="mb-4 flex items-center justify-center gap-4">
+            <span className="h-px w-10 bg-primary/30" aria-hidden="true" />
             <Icon className="h-4 w-4 text-primary" strokeWidth={1.25} />
-            <span className="h-px w-12 bg-primary/30" aria-hidden="true" />
+            <span className="h-px w-10 bg-primary/30" aria-hidden="true" />
           </div>
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.45em] text-primary/75">
+          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.45em] text-primary/75">
             {config.eyebrow}
           </p>
-          <h2 className="font-display text-2xl font-medium uppercase tracking-[0.28em] text-[#f5f0e6] sm:text-3xl">
+          <h2 className="font-display text-xl font-medium uppercase tracking-[0.28em] text-[#f5f0e6] sm:text-2xl">
             {config.title}
           </h2>
-          <div className="mx-auto mt-6 h-px w-16 bg-primary/40" aria-hidden="true" />
+          <div className="mx-auto mt-5 h-px w-14 bg-primary/40" aria-hidden="true" />
         </header>
 
-        {!products ? (
-          <div className="flex flex-col gap-16">
+        {!orderedProducts ? (
+          <div className="flex flex-col gap-12">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-72 animate-pulse border border-primary/10 bg-[#0a0a0a]/60" />
+              <div key={i} className="h-56 animate-pulse border border-primary/10 bg-[#0a0a0a]/60" />
             ))}
           </div>
-        ) : products.length === 0 ? (
+        ) : orderedProducts.length === 0 ? (
           <p className="py-16 text-center text-sm tracking-wide text-muted-foreground">
             Aucun produit dans cette section pour le moment.
           </p>
         ) : (
           <div className="flex flex-col">
-            {products.map((product, i) => {
+            {orderedProducts.map((product, i) => {
               const badges = resolveBadges(product.badges, product.stock)
+              const featured = isFeaturedArrivage(product.badges)
               const out = product.stock <= 0
               const avail = availableVariants(product)
               const activeIdx = cardVariant[product.id] ?? avail[0]?.idx ?? 0
@@ -193,19 +200,35 @@ export function ProductSection({ config }: { config: SectionConfig }) {
               return (
                 <article
                   key={product.id}
-                  className={`group border-t border-primary/15 py-12 last:border-b last:border-primary/15 md:py-16 ${
+                  className={`group border-t border-primary/15 py-8 last:border-b last:border-primary/15 md:py-10 ${
                     out ? "opacity-55" : ""
-                  }`}
+                  } ${featured ? "product-featured-arrivage px-3 sm:px-5" : ""}`}
                 >
+                  {/* Ruban mise en avant Arrivage */}
+                  {featured && !out && (
+                    <div className="mb-5 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+                      <span className="badge-blink bg-primary px-3 py-1 text-[9px] font-bold uppercase tracking-[0.28em] text-black">
+                        Nouveauté
+                      </span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.35em] text-primary">
+                        À la une · Arrivage
+                      </span>
+                    </div>
+                  )}
+
                   <div
-                    className={`flex flex-col gap-10 md:items-center md:gap-14 ${
+                    className={`flex flex-col gap-8 md:items-center md:gap-10 ${
                       imageRight ? "md:flex-row-reverse" : "md:flex-row"
                     }`}
                   >
-                    {/* Visuel grand format — lookbook */}
-                    <div className="relative w-full md:w-[48%] md:shrink-0">
+                    {/* Visuel — un peu plus compact ; plus marqué si arrivage */}
+                    <div className="relative w-full md:w-[44%] md:shrink-0">
                       <div
-                        className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden bg-[#0c0c0c] ring-1 ring-primary/20"
+                        className={`relative mx-auto aspect-[4/5] w-full overflow-hidden bg-[#0c0c0c] ${
+                          featured
+                            ? "max-w-sm ring-2 ring-primary/50 shadow-[0_0_40px_rgba(201,162,39,0.2)]"
+                            : "max-w-xs ring-1 ring-primary/20 sm:max-w-sm"
+                        }`}
                         onClick={() => !out && openModal(product, activeIdx)}
                         role={out ? undefined : "button"}
                         tabIndex={out ? undefined : 0}
@@ -246,7 +269,13 @@ export function ProductSection({ config }: { config: SectionConfig }) {
                         {out ? "Indisponible" : `En stock · ${product.stock}`}
                       </p>
 
-                      <h3 className="font-display text-2xl font-medium uppercase leading-tight tracking-[0.12em] text-[#f5f0e6] sm:text-3xl">
+                      <h3
+                        className={`font-display font-medium uppercase leading-tight tracking-[0.12em] text-[#f5f0e6] ${
+                          featured
+                            ? "text-xl sm:text-2xl"
+                            : "text-lg sm:text-xl"
+                        }`}
+                      >
                         {product.title}
                       </h3>
 
@@ -323,9 +352,13 @@ export function ProductSection({ config }: { config: SectionConfig }) {
                             <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
                               Total sélection
                             </p>
-                            <p className="mt-1 font-display text-3xl font-medium tracking-wide text-primary">
+                            <p
+                              className={`mt-1 font-display font-medium tracking-wide text-primary ${
+                                featured ? "text-2xl sm:text-3xl" : "text-2xl"
+                              }`}
+                            >
                               {effectivePrice(active.v.price, product).toFixed(2)}
-                              <span className="ml-1 text-lg">€</span>
+                              <span className="ml-1 text-base">€</span>
                             </p>
                           </div>
                         ) : (
