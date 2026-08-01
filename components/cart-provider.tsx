@@ -138,7 +138,10 @@ function Toast({ toast }: { toast: ToastState }) {
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 bottom-6 z-[200] flex justify-center px-4 pb-safe"
+      className="pointer-events-none fixed inset-x-0 z-[200] flex justify-center px-4"
+      style={{
+        bottom: "max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))",
+      }}
     >
       {toast && (
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-accent/30 bg-card/95 px-5 py-3 text-sm font-medium text-foreground shadow-2xl shadow-black/50 backdrop-blur transition-all">

@@ -119,16 +119,14 @@ export function ProductSection({ config }: { config: SectionConfig }) {
   }, [isModalOpen, isAnimating])
 
   const Icon = config.icon === "crown" || config.icon === "flask" ? Crown : Sparkles
-  // xl:pr réserve l’espace du rail index catalogue à droite
+  // Centré par le shell parent — pas de margin asymétrique
   const sectionProps = config.anchor
     ? {
         id: config.anchor,
-        className:
-          "mx-auto max-w-[960px] px-5 pb-20 pt-12 scroll-mt-24 sm:px-8 xl:mr-[9.5rem] 2xl:mr-44",
+        className: "w-full pb-14 pt-10 scroll-mt-24 sm:pb-16 sm:pt-12",
       }
     : {
-        className:
-          "mx-auto max-w-[960px] px-5 py-16 sm:px-8 xl:mr-[9.5rem] 2xl:mr-44",
+        className: "w-full py-12 sm:py-14",
       }
 
   const orderedProducts = products ? sortProductsFeaturedFirst(products) : null

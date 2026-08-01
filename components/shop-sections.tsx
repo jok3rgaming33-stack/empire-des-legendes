@@ -5,7 +5,12 @@ import { ProductSection } from "@/components/product-section"
 import { ProductIndexNav } from "@/components/product-index-nav"
 import { listCategories } from "@/app/actions/categories"
 
-// Boutique + index sticky des produits (accès rapide par nom).
+/**
+ * Shell boutique :
+ * - Colonne centrale centrée (produits)
+ * - Sur xl+ : colonnes 1fr | catalogue | 1fr avec index dans la 3e (équilibré, pas de décalage)
+ * - Mobile : catalogue full width + FAB index (safe-area)
+ */
 export function ShopSections() {
   const { data: categories } = useSWR("shop-categories", () => listCategories(), {
     revalidateOnFocus: false,
@@ -13,7 +18,7 @@ export function ShopSections() {
 
   if (!categories) {
     return (
-      <div className="mx-auto max-w-[960px] px-5 py-20 sm:px-8 xl:mr-[9.5rem] 2xl:mr-44">
+      <div className="mx-auto w-full max-w-[960px] px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pt-8 sm:px-6">
         <div className="flex flex-col gap-12">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
@@ -26,24 +31,46 @@ export function ShopSections() {
     )
   }
 
+  const sections = categories.map((cat, idx) => (
+    <ProductSection
+      key={cat.id}
+      config={{
+        section: cat.key,
+        icon: idx === 0 ? "crown" : "sparkles",
+        eyebrow: idx === 0 ? "Collection exclusive" : "Sélection",
+        title: cat.name,
+        gridCols: "catalog-luxe",
+        imageSize: "aspect-[4/5]",
+        anchor: idx === 0 ? "featured" : undefined,
+      }}
+    />
+  ))
+
   return (
-    <div className="relative">
-      {categories.map((cat, idx) => (
-        <ProductSection
-          key={cat.id}
-          config={{
-            section: cat.key,
-            icon: idx === 0 ? "crown" : "sparkles",
-            eyebrow: idx === 0 ? "Collection exclusive" : "Sélection",
-            title: cat.name,
-            gridCols: "catalog-luxe",
-            imageSize: "aspect-[4/5]",
-            anchor: idx === 0 ? "featured" : undefined,
-          }}
-        />
-      ))}
-      {/* Index sticky — desktop rail + mobile FAB */}
-      <ProductIndexNav />
+    <div
+      className="relative w-full pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))]"
+    >
+      {/*
+        xl: grille 3 colonnes égales sur les bords → le bloc produits reste au centre.
+        L’index occupe seulement la zone libre à droite du centre.
+      */}
+      <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(0,920px)_minmax(0,1fr)]">
+        {/* Espace gauche (équilibre) */}
+        <div className="hidden xl:block" aria-hidden="true" />
+
+        {/* Catalogue centré */}
+        <div className="min-w-0 w-full px-4 sm:px-6 xl:px-4">{sections}</div>
+
+        {/* Index dans la colonne droite — sticky, collé au catalogue */}
+        <div className="relative hidden min-w-0 xl:block">
+          <div className="sticky top-24 max-w-[11rem] pl-3 pr-3 2xl:max-w-[12.5rem] 2xl:pl-4">
+            <ProductIndexNav mode="rail" />
+          </div>
+        </div>
+      </div>
+
+      {/* FAB + panneau mobile */}
+      <ProductIndexNav mode="mobile" />
     </div>
   )
 }

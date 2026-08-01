@@ -40,18 +40,18 @@ export function ShopIntroStrip() {
   }
 
   return (
-    <section className="relative z-10 border-b border-primary/15 pt-20 pb-6 sm:pt-22 sm:pb-8">
-      <div className="mx-auto flex max-w-[960px] flex-col items-center gap-3 px-5 text-center sm:px-8">
+    <section className="relative z-10 border-b border-primary/15 pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))] pb-5 sm:pb-6">
+      <div className="mx-auto flex max-w-[920px] flex-col items-center gap-2.5 px-4 text-center sm:px-6">
         <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-primary/80">
           Le Plug des Truands
         </p>
-        <h1 className="font-display text-lg font-medium uppercase tracking-[0.22em] text-[#f5f0e6] sm:text-xl">
+        <h1 className="font-display text-base font-medium uppercase tracking-[0.22em] text-[#f5f0e6] sm:text-lg">
           L&apos;Empire des Légendes
         </h1>
         <button
           type="button"
           onClick={scrollToShop}
-          className="mt-1 text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-500 underline-offset-4 transition-colors hover:text-primary hover:underline"
+          className="mt-0.5 min-h-[44px] px-3 text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-500 underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
           Voir la collection
         </button>
