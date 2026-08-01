@@ -21,3 +21,4 @@ pnpm-lock.yaml.bak
 # Maquettes / assets hors deploy (lourds)
 breakingbad33-assets-integres.html
 characters.png
+.vercel
