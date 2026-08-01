@@ -16,7 +16,7 @@ import { NewsPopup } from "@/components/news-popup"
 import { DeliveryInfoModal } from "@/components/delivery-info-modal"
 import { HowItWorksModal } from "@/components/how-it-works-modal"
 import { CheckoutCart } from "@/components/checkout-cart"
-import { Hero } from "@/components/hero"
+import { Hero, ShopIntroStrip } from "@/components/hero"
 import { ShopSections } from "@/components/shop-sections"
 
 export default function Home() {
@@ -167,9 +167,13 @@ export default function Home() {
         {!isAuthenticated ? (
           <LoginPage onSuccess={handleLoginSuccess} />
         ) : (
-          <div className="bg-background text-foreground">
+          <div className="relative min-h-screen bg-background text-foreground">
+            {/* Fond ambiance (hero-empire) — ne masque plus le catalogue */}
             <Hero />
-            <ShopSections />
+            <div className="relative z-10">
+              <ShopIntroStrip />
+              <ShopSections />
+            </div>
           </div>
         )}
       </main>
