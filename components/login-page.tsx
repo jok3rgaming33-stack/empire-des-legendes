@@ -592,17 +592,19 @@ export function LoginPage({ onSuccess }: { onSuccess: (opts?: { openOrders?: boo
   }
 
   // Écran de Login principal
+  // Fond = preview/hero empire (image graphique). Textes marketing restent DANS l'image.
+  // Ici uniquement le formulaire d'accès (pas de doublon de slogans).
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <img
         src="/images/hero-empire.jpg"
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-center"
       />
-      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-10 opacity-40" />
-      <div className="absolute inset-0 z-20 bg-black/70" />
-      <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/40 via-black/65 to-[#050505]" />
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-10 opacity-25" />
+      {/* Voile pour lisibilité du formulaire uniquement (ne masque pas tout le branding image) */}
+      <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/50 via-black/70 to-[#050505]" />
 
       <header className="fixed left-0 right-0 top-0 z-50 border-b border-primary/20 bg-black/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
@@ -617,22 +619,13 @@ export function LoginPage({ onSuccess }: { onSuccess: (opts?: { openOrders?: boo
         </div>
       </header>
 
-      <div className="relative z-30 flex min-h-screen items-center justify-center px-6 pt-16">
-        <div className="w-full max-w-lg">
-          <div className="mb-10 text-center">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-primary">
-              Le Plug des Truands
-            </p>
-            <h1 className="mb-3 font-display text-4xl font-bold tracking-wide text-balance text-white md:text-5xl">
+      <div className="relative z-30 flex min-h-screen items-center justify-center px-6 pt-20 pb-10">
+        <div className="w-full max-w-lg rounded-sm border border-primary/25 bg-black/75 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-md sm:p-8">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 font-display text-3xl font-bold tracking-wide text-white md:text-4xl">
               Accès Anonyme
             </h1>
-            <p className="mb-2 font-display text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-              L&apos;Empire des Légendes
-            </p>
-            <p className="mb-4 text-[11px] uppercase tracking-[0.28em] text-white/55">
-              Produits de qualité toute l&apos;année
-            </p>
-            <p className="text-lg text-white/65">Aucune donnée personnelle requise</p>
+            <p className="text-base text-white/65">Aucune donnée personnelle requise</p>
           </div>
 
           {/* Bouton principal — verrouillé tant que le guide n'a pas été consulté */}
