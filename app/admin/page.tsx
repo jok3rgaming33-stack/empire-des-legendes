@@ -1,0 +1,55 @@
+import { isAdminAuthenticated } from "@/app/actions/admin-auth"
+import { getThreads, getActiveOrders, getLockerOrders, getDiscussions, getPastOrders } from "@/app/actions/messaging"
+import { listUsers } from "@/app/actions/account"
+import { listVerifications } from "@/app/actions/verification"
+import { listLoginLogs } from "@/app/actions/login-logs"
+import { getProfitData } from "@/app/actions/profit"
+import { listBroadcastNotifications } from "@/app/actions/notifications"
+import { listStaff } from "@/app/actions/staff"
+import { AdminGate } from "@/components/admin-gate"
+import { AdminPanel } from "@/components/admin-panel"
+
+export const dynamic = "force-dynamic"
+
+export const metadata = {
+  title: "Panel Admin — L'Empire des Légendes",
+  robots: { index: false, follow: false },
+}
+
+export default async function AdminPage() {
+  const authed = await isAdminAuthenticated()
+
+  if (!authed) {
+    return <AdminGate />
+  }
+
+  const [activeOrders, lockerOrders, discussions, threads, pastOrders, usersList, verifications, loginLogs, profitData, notifHistory, staffList] = await Promise.all([
+    getActiveOrders(),
+    getLockerOrders(),
+    getDiscussions(),
+    getThreads(),
+    getPastOrders(),
+    listUsers(),
+    listVerifications(),
+    listLoginLogs(200),
+    getProfitData(),
+    listBroadcastNotifications(50),
+    listStaff(),
+  ])
+
+  return (
+    <AdminPanel
+      initialActiveOrders={activeOrders}
+      initialLockerOrders={lockerOrders}
+      initialDiscussions={discussions}
+      initialThreads={threads}
+      initialPastOrders={pastOrders}
+      initialUsers={usersList}
+      initialVerifications={verifications}
+      initialLoginLogs={loginLogs}
+      initialProfitData={profitData}
+      initialNotificationsHistory={notifHistory}
+      initialStaff={staffList}
+    />
+  )
+}

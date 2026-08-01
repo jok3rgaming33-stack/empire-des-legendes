@@ -1,0 +1,163 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-display);
+  --font-sans: var(--font-geist-sans), 'Geist Fallback';
+  --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
+  --font-display: var(--font-cinzel), Georgia, 'Times New Roman', serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-deep: var(--gold-deep);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: dark;
+  /* ==================== L'EMPIRE DES LÉGENDES — noir / or premium ==================== */
+  --background: #050505;
+  --foreground: #f5f0e6;
+  --card: #0c0c0c;
+  --card-foreground: #f5f0e6;
+  --popover: #0c0c0c;
+  --popover-foreground: #f5f0e6;
+  --primary: #c9a227; /* Or CTA */
+  --primary-foreground: #0a0a0a;
+  --secondary: #141414;
+  --secondary-foreground: #f5f0e6;
+  --muted: #141414;
+  --muted-foreground: #a89f8f;
+  --accent: #c9a227; /* Or accent (remplace le vert BB) */
+  --accent-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --border: rgba(201, 162, 39, 0.18);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #c9a227;
+  --gold: #c9a227;
+  --gold-soft: #e0c35a;
+  --gold-deep: #8a6d12;
+  --chart-1: #c9a227;
+  --chart-2: #e0c35a;
+  --chart-3: #8a6d12;
+  --chart-4: #f59e0b;
+  --chart-5: #a89f8f;
+  --radius: 0.5rem;
+  --sidebar: #080808;
+  --sidebar-foreground: #f5f0e6;
+  --sidebar-primary: #c9a227;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #141414;
+  --sidebar-accent-foreground: #f5f0e6;
+  --sidebar-border: rgba(201, 162, 39, 0.15);
+  --sidebar-ring: #c9a227;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 162, 39, 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(201, 162, 39, 0.04), transparent);
+    background-attachment: fixed;
+  }
+  html {
+    @apply font-sans;
+  }
+  ::selection {
+    background: rgba(201, 162, 39, 0.35);
+    color: #fff;
+  }
+}
+
+@layer components {
+  /* Champ de formulaire réutilisable (panel admin + boutique). */
+  .input {
+    @apply w-full rounded-xl border border-border bg-background/60 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent;
+  }
+
+  /* Bouton or premium (vitrine) */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground transition-all hover:bg-[var(--gold-soft)] hover:shadow-[0_0_24px_rgba(201,162,39,0.35)] active:translate-y-px disabled:opacity-50;
+  }
+
+  /* Carte produit or */
+  .card-gold {
+    @apply relative overflow-hidden rounded-sm border border-[rgba(201,162,39,0.35)] bg-[#0a0a0a] transition-all hover:border-[var(--gold)] hover:shadow-[0_0_30px_rgba(201,162,39,0.15)];
+  }
+
+  /* Titre section boutique */
+  .section-title-gold {
+    @apply text-center font-display text-2xl font-semibold uppercase tracking-[0.25em] text-primary md:text-3xl;
+    text-shadow: 0 0 40px rgba(201, 162, 39, 0.25);
+  }
+
+  /* Badge premium circulaire */
+  .badge-premium {
+    @apply inline-flex flex-col items-center justify-center rounded-full border-2 border-primary bg-black/70 text-center text-primary shadow-[0_0_20px_rgba(201,162,39,0.3)];
+  }
+}
+
+/* Safe-area insets — évite que la barre de navigation mobile recouvre les éléments */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+  .border-gold {
+    border-color: rgba(201, 162, 39, 0.45);
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+}

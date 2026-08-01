@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperçu — L'Empire des Légendes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050505;
+      --gold: #c9a227;
+      --gold-soft: #e0c35a;
+      --text: #f5f0e6;
+      --muted: #a89f8f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .display { font-family: Cinzel, Georgia, serif; }
+
+    /* Banner aperçu */
+    .preview-banner {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #1a1508, #0a0a0a);
+      border-bottom: 1px solid rgba(201,162,39,.35);
+      font-size: 12px;
+    }
+    .preview-banner strong { color: var(--gold); }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tabs button {
+      border: 1px solid rgba(201,162,39,.4);
+      background: transparent;
+      color: var(--gold);
+      padding: 8px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    .tabs button.active, .tabs button:hover {
+      background: var(--gold);
+      color: #0a0a0a;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* NAV */
+    header.nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 64px;
+      border-bottom: 1px solid rgba(201,162,39,.2);
+      background: rgba(0,0,0,.85);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 44px; z-index: 50;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--gold); }
+    .brand svg { width: 22px; height: 22px; }
+    .brand span {
+      font-family: Cinzel, serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: rgba(255,255,255,.55);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-right { display: flex; gap: 12px; align-items: center; color: rgba(255,255,255,.8); font-size: 11px; letter-spacing: .15em; text-transform: uppercase; }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 78vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hero img.bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+    .hero .veil {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.75) 42%, rgba(0,0,0,.2) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.35) 0%, transparent 40%, #050505 100%);
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 720px;
+      padding: 100px 40px 80px;
+    }
+    .eyebrow {
+      color: rgba(201,162,39,.9);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-family: Cinzel, serif;
+      color: var(--gold);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-shadow: 0 2px 24px rgba(0,0,0,.8);
+    }
+    .hero h1 .mid {
+      display: flex; align-items: center; gap: 12px;
+      font-size: .72em;
+      margin: 6px 0;
+    }
+    .hero h1 .mid i {
+      display: block; height: 1px; width: 28px;
+      background: rgba(201,162,39,.5);
+    }
+    .tagline {
+      margin-top: 18px;
+      font-size: 14px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.75);
+      font-weight: 500;
+    }
+    .empire-line {
+      margin-top: 28px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .empire-line strong {
+      font-family: Cinzel, serif;
+      color: var(--gold);
+      font-size: 18px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .empire-line small {
+      display: block;
+      color: rgba(255,255,255,.55);
+      font-size: 11px;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .cta-row {
+      margin-top: 36px;
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+    }
+    .btn-gold {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--gold);
+      color: #0a0a0a;
+      border: none;
+      padding: 14px 22px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      text-decoration: none;
+      box-shadow: 0 0 24px rgba(201,162,39,.25);
+    }
+    .btn-gold:hover { background: var(--gold-soft); }
+    .badge-circle {
+      width: 68px; height: 68px;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--gold);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.2;
+      background: rgba(0,0,0,.65);
+      box-shadow: 0 0 20px rgba(201,162,39,.3);
+    }
+    .trust {
+      margin-top: 36px;
+      display: flex; flex-wrap: wrap; gap: 20px;
+      list-style: none;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.7);
+    }
+    .trust li { display: flex; align-items: center; gap: 8px; }
+    .trust span { color: var(--gold); }
+
+    /* SHOP */
+    .shop {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 64px 24px 100px;
+    }
+    .shop-head { text-align: center; margin-bottom: 48px; }
+    .shop-head .line {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      margin-bottom: 12px; color: var(--gold);
+    }
+    .shop-head .line hr { border: none; height: 1px; width: 40px; background: rgba(201,162,39,.4); }
+    .shop-head .eyebrow { margin-bottom: 8px; }
+    .shop-head h2 {
+      font-family: Cinzel, serif;
+      color: var(--gold);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      text-shadow: 0 0 40px rgba(201,162,39,.25);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      border: 1px solid rgba(201,162,39,.35);
+      background: #0a0a0a;
+      border-radius: 2px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 30px rgba(201,162,39,.15);
+    }
+    .card .img {
+      aspect-ratio: 4/5;
+      background: #111 linear-gradient(145deg, #1a1a1a, #0d0d0d);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(201,162,39,.35);
+      font-size: 48px;
+    }
+    .card .body { padding: 16px; }
+    .card h3 {
+      font-family: Cinzel, serif;
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .card .price {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .card .btn-gold { width: 100%; justify-content: center; padding: 11px; font-size: 10px; }
+
+    /* LOGIN mock */
+    .login-wrap {
+      min-height: calc(100vh - 44px);
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      padding: 80px 20px;
+    }
+    .login-wrap img.bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .login-wrap .veil {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(5,5,5,.92));
+    }
+    .login-box {
+      position: relative; z-index: 2;
+      width: 100%; max-width: 440px;
+      text-align: center;
+    }
+    .login-box h1 {
+      font-family: Cinzel, serif;
+      font-size: 2.4rem;
+      margin: 12px 0 8px;
+    }
+    .login-box p { color: rgba(255,255,255,.65); margin-bottom: 28px; }
+    .login-box .btn-gold { width: 100%; justify-content: center; padding: 18px; font-size: 13px; margin-bottom: 12px; }
+    .login-box .ghost {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(0,0,0,.35);
+      color: rgba(255,255,255,.7);
+      padding: 14px;
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .note {
+      max-width: 720px;
+      margin: 0 auto 40px;
+      padding: 16px 20px;
+      border: 1px solid rgba(201,162,39,.25);
+      background: rgba(201,162,39,.06);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      border-radius: 4px;
+    }
+    .note strong { color: var(--gold); }
+
+    @media (max-width: 800px) {
+      .nav-links { display: none; }
+      .hero-inner { padding: 80px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-banner">
+    <div>
+      <strong>APERÇU LOCAL</strong> — L'Empire des Légendes
+      <span style="opacity:.7"> · hors GitHub / hors Vercel · design only</span>
+    </div>
+    <div class="tabs">
+      <button type="button" class="active" data-view="boutique">Boutique</button>
+      <button type="button" data-view="login">Écran d'accès</button>
+    </div>
+  </div>
+
+  <!-- ========== BOUTIQUE ========== -->
+  <div id="view-boutique" class="view active">
+    <header class="nav">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
+        <span>L'Empire des Légendes</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#shop">Boutique</a>
+        <a href="#">Messagerie</a>
+        <a href="#">Livraison</a>
+        <a href="#">Mes commandes</a>
+        <a href="#">Fidélité</a>
+      </nav>
+      <div class="nav-right">Panier · 0</div>
+    </header>
+
+    <section class="hero">
+      <img class="bg" src="public/images/hero-empire.jpg" alt="Hero Empire des Légendes" />
+      <div class="veil"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">Le Plug des Truands</p>
+        <h1 class="display">
+          Pablo Escobar
+          <span class="mid"><i></i> Totorina <i></i></span>
+          El Chapo Guzmán
+        </h1>
+        <p class="tagline">Légendaires. Redoutés. Inoubliables.</p>
+        <div class="empire-line">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="1.5"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z"/></svg>
+          <div>
+            <strong>L'Empire des Légendes</strong>
+            <small>Produits de qualité toute l'année</small>
+          </div>
+        </div>
+        <div class="cta-row">
+          <a class="btn-gold" href="#shop">Découvrir la collection →</a>
+          <div class="badge-circle">Qualité<br/>Premium</div>
+        </div>
+        <ul class="trust">
+          <li><span>■</span> Qualité Premium</li>
+          <li><span>■</span> Livraison Discrète</li>
+          <li><span>■</span> Sur place</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="shop" id="shop">
+      <div class="note">
+        <strong>Ceci est un aperçu design.</strong>
+        Les cartes produits ci-dessous sont factices (maquette).
+        Dans le vrai Next.js : produits admin, panier, commandes, messagerie, KYC restent opérationnels après déploiement avec tes variables d'environnement.
+      </div>
+      <div class="shop-head">
+        <div class="line"><hr/><span>♛</span><hr/></div>
+        <p class="eyebrow">Collection exclusive</p>
+        <h2>Boutique — Collection exclusive</h2>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <div class="img">👕</div>
+          <div class="body">
+            <h3>Chemise Pablo Escobar</h3>
+            <div class="price">89,99 €</div>
+            <button class="btn-gold" type="button">Ajouter au panier</button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="img">🎩</div>
+          <div class="body">
+            <h3>Chapeau Totorina</h3>
+            <div class="price">45,00 €</div>
+            <button class="btn-gold" type="button">Ajouter au panier</button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="img">👔</div>
+          <div class="body">
+            <h3>Polo El Chapo</h3>
+            <div class="price">65,00 €</div>
+            <button class="btn-gold" type="button">Ajouter au panier</button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="img">♛</div>
+          <div class="body">
+            <h3>Pin's Édition Limitée</h3>
+            <div class="price">15,00 €</div>
+            <button class="btn-gold" type="button">Ajouter au panier</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========== LOGIN ========== -->
+  <div id="view-login" class="view">
+    <div class="login-wrap">
+      <img class="bg" src="public/images/hero-empire.jpg" alt="" />
+      <div class="veil"></div>
+      <div class="login-box">
+        <p class="eyebrow">Le Plug des Truands</p>
+        <h1 class="display">Accès Anonyme</h1>
+        <p style="color:var(--gold);font-family:Cinzel,serif;letter-spacing:.16em;text-transform:uppercase;font-size:14px;margin-bottom:8px">L'Empire des Légendes</p>
+        <p style="font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:16px">Produits de qualité toute l'année</p>
+        <p>Aucune donnée personnelle requise</p>
+        <button class="btn-gold" type="button">Créer mon accès anonyme</button>
+        <button class="ghost" type="button">J'ai déjà une clé — me connecter</button>
+        <p style="margin-top:20px;font-size:12px;color:var(--muted)">
+          Même flux que le site d'origine (clé secrète, captcha, admin) — seul le habillage change.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tabs button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tabs button').forEach((b) => b.classList.remove('active'));
+        document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('view-' + btn.dataset.view).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>
